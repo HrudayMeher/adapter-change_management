@@ -88,17 +88,17 @@ class ServiceNowAdapter extends EventEmitter {
   }
 
   /**
- * @memberof ServiceNowAdapter
- * @method healthcheck
- * @summary Check ServiceNow Health
- * @description Verifies external system is available and healthy.
- *   Calls method emitOnline if external system is available.
- *
- * @param {ServiceNowAdapter~requestCallback} [callback] - The optional callback
- *   that handles the response.
- */
-healthcheck(callback) {
- this.getRecord((result, error) => {
+   * @memberof ServiceNowAdapter
+   * @method healthcheck
+   * @summary Check ServiceNow Health
+   * @description Verifies external system is available and healthy.
+   *   Calls method emitOnline if external system is available.
+   *
+   * @param {ServiceNowAdapter~requestCallback} [callback] - The optional callback
+   *   that handles the response.
+   */
+  healthcheck(callback) {
+   this.getRecord((result, error) => {
 
      log.error("ERROR"+error);
      log.error("RESULT"+result);
@@ -153,10 +153,10 @@ healthcheck(callback) {
 
   
  });
-}
+  }
 
-
-
+ 
+ 
   /**
    * @memberof ServiceNowAdapter
    * @method emitOffline
@@ -217,8 +217,8 @@ healthcheck(callback) {
     this.connector.sendRequest(getCallOptions, (results, error) => callback(results, error));
   }
 
-
-
+  
+  
   /**
    * @memberof ServiceNowAdapter
    * @method postRecord
