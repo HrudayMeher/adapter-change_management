@@ -5,7 +5,7 @@ const validResponseRegex = /(2\d\d)/;
 const options = {
   url: 'https://dev62247.service-now.com/',
   username: 'admin',
-  password: '$ENCa4c88e3d607af447a9ed0f45d482691f8582258ca8d2419d57088d1d',
+  password: 'GBiwDoebCV84',
   serviceNowTable: 'change_request'
 };
 /**
