@@ -8,6 +8,7 @@ const options = {
   password: 'GBiwDoebCV84',
   serviceNowTable: 'change_request'
 };
+
 /**
  * The ServiceNowConnector class.
  *
@@ -62,15 +63,14 @@ class ServiceNowConnector {
    * @param {error} callback.error - The error property of callback.
    */
   get(callback) {
-    let getCallOptions = { ...this.options };
+    let getCallOptions = this.options ;
     getCallOptions.method = 'GET';
     getCallOptions.query = 'sysparm_limit=1';
-    this.sendRequest(getCallOptions, (results, error) => callback(results, error));
+    getCallOptions.serviceNowTable = 'change_request';
+    this.sendRequest(getCallOptions, callback);
   }
 
-
-
-/**
+  /**
  * @method constructUri
  * @description Build and return the proper URI by appending an optionally passed
  *   [URL query string]{@link https://en.wikipedia.org/wiki/Query_string}.
@@ -81,6 +81,7 @@ class ServiceNowConnector {
  * @return {string} ServiceNow URL
  */
  constructUri(serviceNowTable, query = null) {
+    
   let uri = `/api/now/table/${serviceNowTable}`;
   if (query) {
     uri = uri + '?' + query;
@@ -102,7 +103,6 @@ class ServiceNowConnector {
   && response.body.includes('<html>')
   && response.statusCode === 200;
 }
-
 
 /**
  * @method processRequestResults
@@ -217,5 +217,9 @@ sendRequest(callOptions, callback) {
   this.sendRequest(callOptions,callback);
 }
 
+
+
+
 }
+
 module.exports = ServiceNowConnector;

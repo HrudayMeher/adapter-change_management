@@ -65,7 +65,7 @@ class ServiceNowAdapter extends EventEmitter {
     this.props = adapterProperties;
     // Instantiate an object from the connector.js module and assign it to an object property.
     this.connector = new ServiceNowConnector({
-      url: this.props.url,
+     url: this.props.url,
       username: this.props.auth.username,
       password: this.props.auth.password,
       serviceNowTable: this.props.serviceNowTable
@@ -98,43 +98,40 @@ class ServiceNowAdapter extends EventEmitter {
  *   that handles the response.
  */
 healthcheck(callback) {
+    let callbackError=null;
+       let callbackData=null;
+          
  this.getRecord((result, error) => {
+  
 
-     log.error("ERROR"+error);
-     log.error("RESULT"+result);
-     var callback = function(result, error) {
-  if (error) throw error; // Check for the error and throw if it exists.
-  console.log('got data: '+result); // Otherwise proceed as usual.
-};
-       getRecord(callback) ( this.connector.get((result, error) => callback(result,error))); 
+       //this.connector.get(callback(result,error)); 
+       
    /**
     * For this lab, complete the if else conditional
     * statements that check if an error exists
     * or the instance was hibernating. You must write
     * the blocks for each branch.
     */
+ 
    if (error) {
-     /**
-      * Write this block.
-      * If an error was returned, we need to emit OFFLINE.
-      * Log the returned error using IAP's global log object
-      * at an error severity. In the log message, record
-      * this.id so an administrator will know which ServiceNow
-      * adapter instance wrote the log message in case more
-      * than one instance is configured.
-      * If an optional IAP callback function was passed to
-      * healthcheck(), execute it passing the error seen as an argument
-      * for the callback's errorMessage parameter.
-      
-      */
-      
-      console.error('Error present.');
+
+       if (error=='Service Now instance is hibernating') {
       callbackError = error;
       this.emitOffline();
-      log.error(callbackError+"id"+this.id);
+      log.error(callbackError+" id "+this.id);
+       }
+       else{
     
+      console.log('Error present.'+"error"+error+"id"+this.id);
+      callbackError = error;
+      this.emitOffline();
+      log.error(callbackError+" id "+this.id);
+       }
      
-   } else {
+   } 
+  
+    
+   else {
      /**
       * Write this block.
       * If no runtime problems were detected, emit ONLINE.
@@ -145,16 +142,38 @@ healthcheck(callback) {
       * parameter as an argument for the callback function's
       * responseData parameter.
       */
+      //console.log("response from ishibernating() "+this.connector.isHibernating(result));
       this.emitOnline();
-      log.debug("no error found");
+      log.debug('no error found' + callbackData);
+     
       callbackData = result;
+       console.log('no error found' + callbackData);
    }
   
+callback(callbackData, callbackError);
+    
+
+   
 
   
  });
+ function callback(callbackData, callbackError){
+    if(callbackError){
+        console.log(callbackError);
+        log.debug(callbackError);
+        
+    }
+    else{
+      console.log(callbackData); 
+      log.debug(callbackData); 
+    }
+    
+}
 }
 
+isHibernating(result) {
+  return result.body.includes('Instance Hibernating page');
+}
 
 
   /**
@@ -211,12 +230,50 @@ healthcheck(callback) {
      * Note how the object was instantiated in the constructor().
      * get() takes a callback function.
      */
-      let getCallOptions = { ...this.options };
-    getCallOptions.method = 'GET';
-    getCallOptions.query = 'sysparm_limit=1';
-    this.connector.sendRequest(getCallOptions, (results, error) => callback(results, error));
-  }
 
+     let callbackData = null;
+    let callbackError = null;
+    let servicejsonObjResult=null;
+ this.connector.get((data, error) => {
+    if (error) {
+     callbackError=error;
+    }
+    else{
+    var jsonstring = JSON.stringify(data);
+    // jsonObject will contain a valid JavaScript object
+
+    let jsonObject =  JSON.parse(jsonstring);//eval('(' + jsonstring + ')');
+    let jsonbodystirng = JSON.stringify(jsonObject.body);
+   // console.log("jsonbodystirng"+jsonbodystirng.body)
+    
+    let jsonbodyobj = JSON.parse(jsonObject.body);
+
+     
+     for(let i=0;i<jsonbodyobj.result.length; i++){
+        let servicejsonobjarray= JSON.stringify(jsonbodyobj.result[i]);
+         let jsonresultobjresultarray = JSON.parse(servicejsonobjarray);
+
+         servicejsonObjResult=[{
+                               change_ticket_number: jsonresultobjresultarray.number,
+                                active: jsonresultobjresultarray.active,
+                                priority: jsonresultobjresultarray.priority,
+                                description: jsonresultobjresultarray.description,
+                                work_start: jsonresultobjresultarray.work_start,
+                                work_end: jsonresultobjresultarray.work_end,
+                                change_ticket_key: jsonresultobjresultarray.sys_id
+                            }
+          ]
+          console.log("servicejsonObjResultGET ->"+JSON.stringify(servicejsonObjResult));
+     }
+        
+            
+    }      
+
+        return callback(servicejsonObjResult, callbackError);
+  });
+
+  }
+  
 
 
   /**
@@ -235,10 +292,50 @@ healthcheck(callback) {
      * Note how the object was instantiated in the constructor().
      * post() takes a callback function.
      */
-      let getCallOptions = { ...this.options };
-    getCallOptions.method = 'POST';
-    this.connector.sendRequest(getCallOptions, (results, error) => callback(results, error));
+     let callbackData = null;
+    let callbackError = null;
+
+    
+    this.connector.post(this.connector,(data, error) => {
+   if (error) {
+      callbackError=error;
+    }
+    else
+    {
+
+    
+    
+   var jsonstring = JSON.stringify(data);
+    let jsonObject =  JSON.parse(jsonstring);//eval('(' + jsonstring + ')');
+    let jsonbodystirng = JSON.stringify(jsonObject.body);
+    let jsonresultobj = JSON.parse(jsonObject.body);
+  
+
+     let servicejsonobj= JSON.stringify(jsonresultobj.result);
+   
+    let jsonresultobjresult = JSON.parse(servicejsonobj);
+    
+    let servicejsonObjResult={
+                               change_ticket_number: jsonresultobjresult.number,
+                                active: jsonresultobjresult.active,
+                                priority: jsonresultobjresult.priority,
+                                description: jsonresultobjresult.description,
+                                work_start: jsonresultobjresult.work_start,
+                                work_end: jsonresultobjresult.work_end,
+                                change_ticket_key: jsonresultobjresult.sys_id
+                            }
+console.log("servicejsonObjResultPOST ->"+JSON.stringify(servicejsonObjResult));
+                         
+     return callback(servicejsonObjResult, callbackError);  
+    }
+     
+  });
   }
 }
+
+
+
+// Call mainOnObject to run it.
+
 
 module.exports = ServiceNowAdapter;
